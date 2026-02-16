@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <tmFile>/Users/anton/Documents/lab8sem/src/telemetry/190829_v29854.KNP</tmFile>
+    <xmlFile>/Users/anton/Documents/lab8sem/src/telemetry/KNP-173.14.33.58.dat.xml</xmlFile>
+    <dimFile>/Users/anton/Documents/lab8sem/src/telemetry/dimens.ion</dimFile>
+</config>
