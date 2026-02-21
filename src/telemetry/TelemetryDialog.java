@@ -6,9 +6,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.Comparator;
@@ -27,6 +26,9 @@ public class TelemetryDialog extends JFrame {
     private JTextField txtXmlFile;
     private JTextField txtDimFile;
     private JButton btnLoad;
+
+    // Новая кнопка для просмотра файлов
+    private JButton btnViewFile;
 
     // Список чекбоксов для общей статистики
     private JList<String> statListGeneral;
@@ -53,9 +55,9 @@ public class TelemetryDialog extends JFrame {
             "Point (3)",
             "Уникальные параметры",
             "Point < 4 байт",
-            "Point >= 4 байт",
+            "Point > 4 байт",
             "Code < 8 разрядов",
-            "Code >= 8 разрядов"
+            "Code > 8 разрядов"
     };
 
     // Названия пунктов статистики по параметру (10 пунктов)
@@ -67,9 +69,9 @@ public class TelemetryDialog extends JFrame {
             "Point (3)",
             "Неизвестный тип",
             "Point < 4 байт",
-            "Point >= 4 байт",
+            "Point > 4 байт",
             "Code < 8 разрядов",
-            "Code >= 8 разрядов"
+            "Code > 8 разрядов"
     };
 
     public TelemetryDialog() {
@@ -100,39 +102,67 @@ public class TelemetryDialog extends JFrame {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        // TM-файл
         gbc.gridx = 0; gbc.gridy = 0;
         filePanel.add(new JLabel("TM-файл:"), gbc);
         txtTmFile = new JTextField(30);
         txtTmFile.setEditable(false);
         gbc.gridx = 1; gbc.weightx = 1.0;
         filePanel.add(txtTmFile, gbc);
+
+        JPanel tmButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         JButton btnTm = new JButton("Обзор...");
         btnTm.addActionListener(this::chooseTmFile);
-        gbc.gridx = 2; gbc.weightx = 0;
-        filePanel.add(btnTm, gbc);
+        tmButtons.add(btnTm);
 
+        JButton btnViewTm = new JButton("Просмотр");
+        btnViewTm.addActionListener(e -> viewFile(txtTmFile.getText(), "TM-файл"));
+        tmButtons.add(btnViewTm);
+
+        gbc.gridx = 2; gbc.weightx = 0;
+        filePanel.add(tmButtons, gbc);
+
+        // XML-файл
         gbc.gridx = 0; gbc.gridy = 1;
         filePanel.add(new JLabel("XML-файл:"), gbc);
         txtXmlFile = new JTextField(30);
         txtXmlFile.setEditable(false);
         gbc.gridx = 1; gbc.weightx = 1.0;
         filePanel.add(txtXmlFile, gbc);
+
+        JPanel xmlButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         JButton btnXml = new JButton("Обзор...");
         btnXml.addActionListener(this::chooseXmlFile);
-        gbc.gridx = 2; gbc.weightx = 0;
-        filePanel.add(btnXml, gbc);
+        xmlButtons.add(btnXml);
 
+        JButton btnViewXml = new JButton("Просмотр");
+        btnViewXml.addActionListener(e -> viewFile(txtXmlFile.getText(), "XML-файл"));
+        xmlButtons.add(btnViewXml);
+
+        gbc.gridx = 2; gbc.weightx = 0;
+        filePanel.add(xmlButtons, gbc);
+
+        // Файл размерностей
         gbc.gridx = 0; gbc.gridy = 2;
         filePanel.add(new JLabel("Размерности:"), gbc);
         txtDimFile = new JTextField(30);
         txtDimFile.setEditable(false);
         gbc.gridx = 1; gbc.weightx = 1.0;
         filePanel.add(txtDimFile, gbc);
+
+        JPanel dimButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         JButton btnDim = new JButton("Обзор...");
         btnDim.addActionListener(this::chooseDimFile);
-        gbc.gridx = 2; gbc.weightx = 0;
-        filePanel.add(btnDim, gbc);
+        dimButtons.add(btnDim);
 
+        JButton btnViewDim = new JButton("Просмотр");
+        btnViewDim.addActionListener(e -> viewFile(txtDimFile.getText(), "Файл размерностей"));
+        dimButtons.add(btnViewDim);
+
+        gbc.gridx = 2; gbc.weightx = 0;
+        filePanel.add(dimButtons, gbc);
+
+        // Кнопка загрузки
         gbc.gridx = 1; gbc.gridy = 3;
         btnLoad = new JButton("Загрузить данные");
         btnLoad.addActionListener(this::loadDataAction);
@@ -246,6 +276,145 @@ public class TelemetryDialog extends JFrame {
         add(southPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Просмотр содержимого выбранного файла
+     * @param filePath путь к файлу
+     * @param fileType тип файла для заголовка окна
+     */
+    private void viewFile(String filePath, String fileType) {
+        if (filePath == null || filePath.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Сначала выберите файл для просмотра.",
+                    "Предупреждение",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        File file = new File(filePath);
+        if (!file.exists()) {
+            JOptionPane.showMessageDialog(this,
+                    "Файл не существует:\n" + filePath,
+                    "Ошибка",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            // Создаём окно для просмотра
+            JFrame viewFrame = new JFrame("Просмотр: " + file.getName());
+            viewFrame.setSize(800, 600);
+            viewFrame.setLocationRelativeTo(this);
+
+            JTextArea textArea = new JTextArea();
+            textArea.setEditable(false);
+            textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+            // Определяем тип файла и читаем соответствующим образом
+            if (fileType.contains("TM") || filePath.toLowerCase().endsWith(".knp")) {
+                // Для бинарных TM-файлов показываем hex-дамп
+                readBinaryFile(file, textArea);
+            } else {
+                // Для текстовых файлов (XML, ion) читаем как текст
+                readTextFile(file, textArea);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            viewFrame.add(scrollPane);
+
+            // Кнопка закрытия
+            JButton btnClose = new JButton("Закрыть");
+            btnClose.addActionListener(e -> viewFrame.dispose());
+
+            JPanel bottomPanel = new JPanel();
+            bottomPanel.add(btnClose);
+            viewFrame.add(bottomPanel, BorderLayout.SOUTH);
+
+            viewFrame.setVisible(true);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Ошибка при чтении файла:\n" + ex.getMessage(),
+                    "Ошибка",
+                    JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Чтение текстового файла
+     */
+    private void readTextFile(File file, JTextArea textArea) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            StringBuilder content = new StringBuilder();
+            String line;
+            int lineNum = 1;
+            while ((line = reader.readLine()) != null) {
+                content.append(String.format("%4d: %s\n", lineNum++, line));
+                if (content.length() > 1000000) { // Ограничение на 1 млн символов
+                    content.append("\n... файл слишком большой, показана только часть ...\n");
+                    break;
+                }
+            }
+            textArea.setText(content.toString());
+            textArea.setCaretPosition(0);
+        }
+    }
+
+    /**
+     * Чтение бинарного файла с выводом hex-дампа
+     */
+    private void readBinaryFile(File file, JTextArea textArea) throws IOException {
+        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+            StringBuilder content = new StringBuilder();
+            byte[] buffer = new byte[16];
+            long fileLength = raf.length();
+            long maxBytes = Math.min(fileLength, 10240); // максимум 10 КБ
+
+            content.append("Бинарный файл: ").append(file.getName()).append("\n");
+            content.append("Размер: ").append(fileLength).append(" байт\n");
+            content.append("Первые ").append(maxBytes).append(" байт:\n\n");
+
+            for (long offset = 0; offset < maxBytes; offset += 16) {
+                int bytesRead = raf.read(buffer);
+                if (bytesRead <= 0) break;
+
+                // Адрес
+                content.append(String.format("%08X: ", offset));
+
+                // Hex-представление
+                for (int i = 0; i < 16; i++) {
+                    if (i < bytesRead) {
+                        content.append(String.format("%02X ", buffer[i]));
+                    } else {
+                        content.append("   ");
+                    }
+                    if (i == 7) content.append(" ");
+                }
+
+                content.append(" |");
+
+                // ASCII-представление
+                for (int i = 0; i < bytesRead; i++) {
+                    char c = (char) buffer[i];
+                    if (c >= 32 && c <= 126) {
+                        content.append(c);
+                    } else {
+                        content.append('.');
+                    }
+                }
+
+                content.append("|\n");
+            }
+
+            if (fileLength > maxBytes) {
+                content.append("\n... и ещё ").append(fileLength - maxBytes).append(" байт ...\n");
+            }
+
+            textArea.setText(content.toString());
+            textArea.setCaretPosition(0);
+        }
+    }
+
     // Рендерер для чекбоксов
     private static class CheckBoxListRenderer extends JCheckBox implements ListCellRenderer<String> {
         private final boolean[] selected;
@@ -323,7 +492,7 @@ public class TelemetryDialog extends JFrame {
             @Override
             protected void done() {
                 try {
-                    get(); // проверить исключения
+                    get();
                     updateUIAfterLoad();
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -411,9 +580,9 @@ public class TelemetryDialog extends JFrame {
 
         sb.append("  Уникальных параметров: ").append(reader.getRecordsByName().size()).append("\n");
         sb.append("  Point < 4 байт: ").append(reader.getPointLess4()).append("\n");
-        sb.append("  Point >= 4 байт: ").append(reader.getPointGreater4()).append("\n");
+        sb.append("  Point > 4 байт: ").append(reader.getPointGreater4()).append("\n");
         sb.append("  Code < 8 разрядов: ").append(reader.getCodeLess8()).append("\n");
-        sb.append("  Code >= 8 разрядов: ").append(reader.getCodeGreater8()).append("\n");
+        sb.append("  Code > 8 разрядов: ").append(reader.getCodeGreater8()).append("\n");
         statsArea.setText(sb.toString());
     }
 
@@ -462,7 +631,7 @@ public class TelemetryDialog extends JFrame {
         }
         if (statSelectedGeneral[6]) {
             sb.append(STAT_ITEMS_GENERAL[6]).append(": ").append(tc[2]).append("\n");
-                    anySelected = true;
+            anySelected = true;
         }
         if (statSelectedGeneral[7]) {
             sb.append(STAT_ITEMS_GENERAL[7]).append(": ").append(tc[3]).append("\n");
