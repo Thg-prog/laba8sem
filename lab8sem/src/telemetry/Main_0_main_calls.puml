@@ -36,18 +36,18 @@ config=CallConfiguration;
     "removeByClassPackage": "", // cleanup the graph after inheritance/annotation based filtering is done
     "removeByClassName": "",
     "cutMappings": false,
-    "cutEnum": false,
+    "cutEnum": true,
     "cutTests": true,
     "cutClient": true,
-    "cutDataAccess": false,
-    "cutInterfaceStructures": false,
-    "cutDataStructures": false,
-    "cutGetterAndSetter": false,
-    "cutConstructors": false
+    "cutDataAccess": true,
+    "cutInterfaceStructures": true,
+    "cutDataStructures": true,
+    "cutGetterAndSetter": true,
+    "cutConstructors": true
   },
   "graphTraversal": {
-    "forwardDepth": 7,
-    "backwardDepth": 7,
+    "forwardDepth": 9,
+    "backwardDepth": 9,
     "classPackageExcludeFilter": "",
     "classPackageIncludeFilter": "",
     "classNameExcludeFilter": "",
@@ -59,17 +59,17 @@ config=CallConfiguration;
     "hidePrivateMethods": true,
     "hideInterfaceCalls": true, // indirection: implementation -> interface (is hidden) -> implementation
     "onlyShowApplicationEntryPoints": false, // root node is included
-    "useMethodCallsForStructureDiagram": "ForwardOnly" // ForwardOnly, BothDirections, No
+    "useMethodCallsForStructureDiagram": "BothDirections" // ForwardOnly, BothDirections, No
   },
   "details": {
-    "aggregation": "GroupByClass", // ByClass, GroupByClass, None
+    "aggregation": "None", // ByClass, GroupByClass, None
     "showMethodParametersTypes": false,
     "showMethodParametersNames": false,
     "showMethodReturnType": false,
-    "showPackageLevels": 8,
-    "showCallOrder": true,
+    "showPackageLevels": 2,
+    "showCallOrder": false,
     "edgeMode": "TypesAndMethods", // TypesOnly, MethodsOnly, TypesAndMethods, MethodsAndDirectTypeUsage
-    "showDetailedClassStructure": true
+    "showDetailedClassStructure": false
   },
   "rootClass": "telemetry.Main",
   "extensionCallbackMethod": "" // qualified.class.name#methodName - signature: public static String method(String)
@@ -84,112 +84,25 @@ digraph g {
     
 
 'nodes 
-subgraph cluster_780346297 { 
-   	label=telemetry
-	labeljust=l
-	fillcolor="#ececec"
-	style=filled
-   
-   subgraph cluster_1666710254 { 
-   	label=Main
-	labeljust=l
-	fillcolor=white
-	style=filled
-   
-   Main780346297XXXmain1859653459[
+Config780346297XXXload1808118735[
+	label="+ load()"
+	tooltip="Config
+
+null"
+	fontcolor=darkgreen
+];
+
+Main780346297XXXmain1859653459[
 	label="+ main()"
-	style=filled
-	fillcolor=white
 	tooltip="Main
 
 null"
 	penwidth=4
 	fontcolor=darkgreen
 ];
-} 
-
-subgraph cluster_587464905 { 
-   	label=Config
-	labeljust=l
-	fillcolor=white
-	style=filled
-   
-   Config780346297XXXgetDimFile0[
-	label="+ getDimFile()"
-	style=filled
-	fillcolor=white
-	tooltip="Config
-
-null"
-	fontcolor=darkgreen
-];
-
-Config780346297XXXgetTmFile0[
-	label="+ getTmFile()"
-	style=filled
-	fillcolor=white
-	tooltip="Config
-
-null"
-	fontcolor=darkgreen
-];
-
-Config780346297XXXgetXmlFile0[
-	label="+ getXmlFile()"
-	style=filled
-	fillcolor=white
-	tooltip="Config
-
-null"
-	fontcolor=darkgreen
-];
-
-Config780346297XXXload1808118735[
-	label="+ load()"
-	style=filled
-	fillcolor=white
-	tooltip="Config
-
-null"
-	fontcolor=darkgreen
-];
-} 
-
-subgraph cluster_937179636 { 
-   	label=TelemetryDialog
-	labeljust=l
-	fillcolor=white
-	style=filled
-   
-   TelemetryDialog780346297XXXTelemetryDialog0[
-	label="+ TelemetryDialog()"
-	style=filled
-	fillcolor=white
-	tooltip="TelemetryDialog
-
-null"
-	fontcolor=darkgreen
-];
-
-TelemetryDialog780346297XXXsetDefaultFiles924985979[
-	label="+ setDefaultFiles()"
-	style=filled
-	fillcolor=white
-	tooltip="TelemetryDialog
-
-null"
-	fontcolor=darkgreen
-];
-} 
-} 
 
 'edges    
-Main780346297XXXmain1859653459 -> Config780346297XXXgetDimFile0[label=7];
-Main780346297XXXmain1859653459 -> Config780346297XXXgetTmFile0[label=5];
-Main780346297XXXmain1859653459 -> Config780346297XXXgetXmlFile0[label=6];
-Main780346297XXXmain1859653459 -> Config780346297XXXload1808118735[label=3];
-Main780346297XXXmain1859653459 -> TelemetryDialog780346297XXXTelemetryDialog0[label=1];
-Main780346297XXXmain1859653459 -> TelemetryDialog780346297XXXsetDefaultFiles924985979[label=4];
+Main780346297XXXmain1859653459 -> Config780346297XXXload1808118735;
     
 }
 @enduml

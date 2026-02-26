@@ -35,18 +35,18 @@ config=StructureConfiguration;
     "removeByClassPackage": "", // cleanup the graph after inheritance/annotation based filtering is done
     "removeByClassName": "",
     "cutMappings": false,
-    "cutEnum": false,
+    "cutEnum": true,
     "cutTests": true,
     "cutClient": true,
-    "cutDataAccess": false,
-    "cutInterfaceStructures": false,
-    "cutDataStructures": false,
-    "cutGetterAndSetter": false,
-    "cutConstructors": false
+    "cutDataAccess": true,
+    "cutInterfaceStructures": true,
+    "cutDataStructures": true,
+    "cutGetterAndSetter": true,
+    "cutConstructors": true
   },
   "graphTraversal": {
-    "forwardDepth": 7,
-    "backwardDepth": 7,
+    "forwardDepth": 6,
+    "backwardDepth": 6,
     "classPackageExcludeFilter": "",
     "classPackageIncludeFilter": "",
     "classNameExcludeFilter": "",
@@ -61,13 +61,13 @@ config=StructureConfiguration;
     "useMethodCallsForStructureDiagram": "ForwardOnly" // ForwardOnly, BothDirections, No
   },
   "details": {
-    "aggregation": "GroupByClass", // ByClass, GroupByClass, None
+    "aggregation": "None", // ByClass, GroupByClass, None
     "showClassGenericTypes": true,
     "showMethods": true,
     "showMethodParameterNames": true,
     "showMethodParameterTypes": true,
     "showMethodReturnType": true,
-    "showPackageLevels": 2,
+    "showPackageLevels": 10,
     "showDetailedClassStructure": true
   },
   "rootClass": "telemetry.Main",
@@ -83,13 +83,7 @@ digraph g {
     
 
 'nodes 
-subgraph cluster_780346297 { 
-   	label=telemetry
-	labeljust=l
-	fillcolor="#ececec"
-	style=filled
-   
-   Config780346297[
+Config780346297[
 	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
 <TR><TD ALIGN="LEFT" >(C)Config</TD></TR>
 <HR/>
@@ -97,44 +91,6 @@ subgraph cluster_780346297 {
 <TR><TD ALIGN="LEFT" >-   tmFile: String [0..1]</TD></TR>
 <TR><TD ALIGN="LEFT" >-   xmlFile: String [0..1]</TD></TR>
 <HR/>
-<TR><TD ALIGN="LEFT" >+ getDimFile(): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getTmFile(): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getXmlFile(): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ load(filename: String)</TD></TR>
-<TR><TD ALIGN="LEFT" >- setDefaults()</TD></TR>
-</TABLE>>
-	style=filled
-	margin=0
-	shape=plaintext
-	fillcolor="#FFFFFF"
-];
-
-DatXML780346297[
-	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
-<TR><TD ALIGN="LEFT" >(C)DatXML</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >-   paramFullNames: Map&lt;Integer, String&gt; [0..*]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   paramNames: Map&lt;Integer, String&gt; [0..*]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   paramTextValues: Map&lt;Integer, List&lt;String&gt;&gt; [0..*]</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >+ getFullName(number: int): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getName(number: int): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getTextValues(number: int): List&lt;String&gt;</TD></TR>
-<TR><TD ALIGN="LEFT" >+ load(filename: String)</TD></TR>
-</TABLE>>
-	style=filled
-	margin=0
-	shape=plaintext
-	fillcolor="#FFFFFF"
-];
-
-Dim780346297[
-	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
-<TR><TD ALIGN="LEFT" >(C)Dim</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >-   dimensions: Map&lt;Integer, String&gt; [0..*]</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >+ getDimension(code: int): String</TD></TR>
 <TR><TD ALIGN="LEFT" >+ load(filename: String)</TD></TR>
 </TABLE>>
 	style=filled
@@ -155,216 +111,8 @@ Main780346297[
 	fillcolor="#FFFFFF"
 ];
 
-ReadTMI780346297[
-	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
-<TR><TD ALIGN="LEFT" >(C)ReadTMI</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >-   allRecords: List&lt;TmDat&gt; [0..*]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   recordsByName: Map&lt;String, List&lt;TmDat&gt;&gt; [0..*]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   serviceRecords: int [1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   totalRecords: int [1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   typeCounts: int[] [0..*]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   unknownRecords: int [1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   usefulRecords: int [1]</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >- createTmRecord(header: byte[], valueData: byte[], valueType: int, dim: Dim, datXML: DatXML): TmDat</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getAllRecords(): List&lt;TmDat&gt;</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getRecordsByName(): Map&lt;String, List&lt;TmDat&gt;&gt;</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getServiceRecords(): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getTotalRecords(): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getTypeCounts(): int[]</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getUnknownRecords(): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getUsefulRecords(): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ load(tmFilename: String, dim: Dim, datXML: DatXML)</TD></TR>
-<TR><TD ALIGN="LEFT" >- processServiceRecord(rec: byte[])</TD></TR>
-</TABLE>>
-	style=filled
-	margin=0
-	shape=plaintext
-	fillcolor="#FFFFFF"
-];
-
-TelemetryDialog780346297[
-	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
-<TR><TD ALIGN="LEFT" >(C)TelemetryDialog</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >-   btnLoad: JButton [0..1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   datXML: DatXML [0..1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   dim: Dim [0..1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   listModel: DefaultListModel&lt;String&gt; [0..1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   paramList: JList&lt;String&gt; [0..1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   reader: ReadTMI [0..1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   statsArea: JTextArea [0..1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   txtDimFile: JTextField [0..1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   txtTmFile: JTextField [0..1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   txtXmlFile: JTextField [0..1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   valueArea: JTextArea [0..1]</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >+ TelemetryDialog()</TD></TR>
-<TR><TD ALIGN="LEFT" >- buildStatistics()</TD></TR>
-<TR><TD ALIGN="LEFT" >- chooseDimFile(e: ActionEvent)</TD></TR>
-<TR><TD ALIGN="LEFT" >- chooseTmFile(e: ActionEvent)</TD></TR>
-<TR><TD ALIGN="LEFT" >- chooseXmlFile(e: ActionEvent)</TD></TR>
-<TR><TD ALIGN="LEFT" >- getParameterStatistics(paramName: String): String</TD></TR>
-<TR><TD ALIGN="LEFT" >- getSingleStatisticItem(item: String): String</TD></TR>
-<TR><TD ALIGN="LEFT" >- initUI()</TD></TR>
-<TR><TD ALIGN="LEFT" >- loadDataAction(e: ActionEvent)</TD></TR>
-<TR><TD ALIGN="LEFT" >- paramSelected(e: ListSelectionEvent)</TD></TR>
-<TR><TD ALIGN="LEFT" >- saveStatistics(e: ActionEvent)</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setDefaultFiles(tmFile: String, xmlFile: String, dimFile: String)</TD></TR>
-<TR><TD ALIGN="LEFT" >- updateStatsPlaceholder()</TD></TR>
-<TR><TD ALIGN="LEFT" >- updateUIAfterLoad()</TD></TR>
-</TABLE>>
-	style=filled
-	margin=0
-	shape=plaintext
-	fillcolor="#FFFFFF"
-];
-
-TmCode780346297[
-	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
-<TR><TD ALIGN="LEFT" >(C)TmCode</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >-   codeLength: int [1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   codeValue: int [1]</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >+ getCodeLength(): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getCodeValue(): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getValueAsString(): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setCodeLength(codeLength: int)</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setCodeValue(codeValue: int)</TD></TR>
-</TABLE>>
-	style=filled
-	margin=0
-	shape=plaintext
-	fillcolor="#FFFFFF"
-];
-
-TmDat780346297[
-	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
-<TR><TD ALIGN="LEFT" >(C)TmDat</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >#   attribute: int [1]</TD></TR>
-<TR><TD ALIGN="LEFT" >#   dimension: String [0..1]</TD></TR>
-<TR><TD ALIGN="LEFT" >#   name: String [0..1]</TD></TR>
-<TR><TD ALIGN="LEFT" >#   number: int [1]</TD></TR>
-<TR><TD ALIGN="LEFT" >#   time: long [1]</TD></TR>
-<TR><TD ALIGN="LEFT" >#   valueType: int [1]</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >+ compareTo(other: TmDat): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ formatTime(millis: long): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getAttribute(): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getDimension(): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getName(): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getNumber(): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getTime(): long</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getValueAsString(): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getValueType(): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setAttribute(attribute: int)</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setDimension(dimension: String)</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setName(name: String)</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setNumber(number: int)</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setTime(time: long)</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setValueType(valueType: int)</TD></TR>
-</TABLE>>
-	style=filled
-	margin=0
-	shape=plaintext
-	fillcolor="#FFFFFF"
-];
-
-TmDouble780346297[
-	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
-<TR><TD ALIGN="LEFT" >(C)TmDouble</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >-   value: double [1]</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >+ getValue(): double</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getValueAsString(): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setValue(value: double)</TD></TR>
-</TABLE>>
-	style=filled
-	margin=0
-	shape=plaintext
-	fillcolor="#FFFFFF"
-];
-
-TmLong780346297[
-	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
-<TR><TD ALIGN="LEFT" >(C)TmLong</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >-   value: int [1]</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >+ getValue(): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getValueAsString(): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setValue(value: int)</TD></TR>
-</TABLE>>
-	style=filled
-	margin=0
-	shape=plaintext
-	fillcolor="#FFFFFF"
-];
-
-TmPoint780346297[
-	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
-<TR><TD ALIGN="LEFT" >(C)TmPoint</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >-   data: byte[] [0..*]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   dataLength: int [1]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   elementSize: int [1]</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >+ getData(): byte[]</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getDataLength(): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getElementSize(): int</TD></TR>
-<TR><TD ALIGN="LEFT" >+ getValueAsString(): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setData(data: byte[])</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setDataLength(dataLength: int)</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setElementSize(elementSize: int)</TD></TR>
-</TABLE>>
-	style=filled
-	margin=0
-	shape=plaintext
-	fillcolor="#FFFFFF"
-];
-
-TmUnknown780346297[
-	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
-<TR><TD ALIGN="LEFT" >(C)TmUnknown</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >-   rawData: byte[] [0..*]</TD></TR>
-<TR><TD ALIGN="LEFT" >-   rawHeader: byte[] [0..*]</TD></TR>
-<HR/>
-<TR><TD ALIGN="LEFT" >+ getValueAsString(): String</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setRawData(rawData: byte[])</TD></TR>
-<TR><TD ALIGN="LEFT" >+ setRawHeader(rawHeader: byte[])</TD></TR>
-</TABLE>>
-	style=filled
-	margin=0
-	shape=plaintext
-	fillcolor="#FFFFFF"
-];
-} 
-
 'edges    
-ReadTMI780346297 -> DatXML780346297[label="createTmRecord() -> getName()"];
-ReadTMI780346297 -> Dim780346297[label="createTmRecord() -> getDimension()"];
-ReadTMI780346297 -> TmDat780346297[label="allRecords
-[0..*]"];
-ReadTMI780346297 -> TmDat780346297[label="recordsByName
-[0..*]"];
-ReadTMI780346297 -> TmDouble780346297[label="createTmRecord() -> setValue()"];
-ReadTMI780346297 -> TmLong780346297[label="createTmRecord() -> setValue()"];
-TelemetryDialog780346297 -> DatXML780346297[label="datXML
-[0..1]"];
-TelemetryDialog780346297 -> Dim780346297[label="dim
-[0..1]"];
-TelemetryDialog780346297 -> ReadTMI780346297[label="reader
-[0..1]"];
-TmDat780346297 -> TmCode780346297[arrowhead=none, arrowtail=empty, dir=both];
-TmDat780346297 -> TmDouble780346297[arrowhead=none, arrowtail=empty, dir=both];
-TmDat780346297 -> TmLong780346297[arrowhead=none, arrowtail=empty, dir=both];
-TmDat780346297 -> TmPoint780346297[arrowhead=none, arrowtail=empty, dir=both];
-TmDat780346297 -> TmUnknown780346297[arrowhead=none, arrowtail=empty, dir=both];
+Main780346297 -> Config780346297[label="main() -> load()"];
     
 }
 @enduml

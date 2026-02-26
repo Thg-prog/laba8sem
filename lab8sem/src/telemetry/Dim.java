@@ -20,6 +20,7 @@ public class Dim {
     public void load(String filename) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
+            line = reader.readLine();
             int lineNum = 1;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
@@ -29,12 +30,16 @@ public class Dim {
                 lineNum++;
             }
         }
+        String line = "";
         // Проверка: по заданию код 32 должен быть "%"
         // (если файл корректен, это выполняется автоматически)
     }
 
     /** Возвращает размерность по коду, или строку "[код]" если код не найден. */
     public String getDimension(int code) {
+        if (! dimensions.containsKey(code)){
+            System.out.println(code);
+        }
         return dimensions.getOrDefault(code, "[" + code + "]");
     }
 }

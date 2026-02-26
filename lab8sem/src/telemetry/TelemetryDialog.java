@@ -4,9 +4,10 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.Comparator;
@@ -26,17 +27,51 @@ public class TelemetryDialog extends JFrame {
     private JTextField txtDimFile;
     private JButton btnLoad;
 
-    // Массив пунктов для выборочной статистики
-    private static final String[] STAT_ITEMS = {
+    // Новая кнопка для просмотра файлов
+    private JButton btnViewFile;
+
+    // Список чекбоксов для общей статистики
+    private JList<String> statListGeneral;
+    private boolean[] statSelectedGeneral;
+
+    // Список чекбоксов для статистики по параметру
+    private JList<String> statListParam;
+    private boolean[] statSelectedParam;
+
+    private JButton btnShowSelected;
+    private JButton btnResetStats;
+    private JButton btnSaveStats;
+    private JButton btnClearValues;
+
+    // Названия пунктов общей статистики (13 пунктов)
+    private static final String[] STAT_ITEMS_GENERAL = {
             "Общее количество записей",
             "Служебные записи",
             "Полезные записи",
-            "Неизвестный тип",
+            "Записей с неизвестным типом",
             "Long (0)",
             "Double (1)",
             "Code (2)",
             "Point (3)",
-            "Уникальные параметры"
+            "Уникальные параметры",
+            "Point < 4 байт",
+            "Point > 4 байт",
+            "Code < 8 разрядов",
+            "Code > 8 разрядов"
+    };
+
+    // Названия пунктов статистики по параметру (10 пунктов)
+    private static final String[] STAT_ITEMS_PARAM = {
+            "Всего записей параметра",
+            "Long (0)",
+            "Double (1)",
+            "Code (2)",
+            "Point (3)",
+            "Неизвестный тип",
+            "Point < 4 байт",
+            "Point > 4 байт",
+            "Code < 8 разрядов",
+            "Code > 8 разрядов"
     };
 
     public TelemetryDialog() {
@@ -61,7 +96,7 @@ public class TelemetryDialog extends JFrame {
     private void initUI() {
         setLayout(new BorderLayout());
 
-        // Панель выбора файлов
+        // ---------- Панель выбора файлов ----------
         JPanel filePanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -74,10 +109,18 @@ public class TelemetryDialog extends JFrame {
         txtTmFile.setEditable(false);
         gbc.gridx = 1; gbc.weightx = 1.0;
         filePanel.add(txtTmFile, gbc);
+
+        JPanel tmButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         JButton btnTm = new JButton("Обзор...");
         btnTm.addActionListener(this::chooseTmFile);
+        tmButtons.add(btnTm);
+
+        JButton btnViewTm = new JButton("Просмотр");
+        btnViewTm.addActionListener(e -> viewFile(txtTmFile.getText(), "TM-файл"));
+        tmButtons.add(btnViewTm);
+
         gbc.gridx = 2; gbc.weightx = 0;
-        filePanel.add(btnTm, gbc);
+        filePanel.add(tmButtons, gbc);
 
         // XML-файл
         gbc.gridx = 0; gbc.gridy = 1;
@@ -86,10 +129,18 @@ public class TelemetryDialog extends JFrame {
         txtXmlFile.setEditable(false);
         gbc.gridx = 1; gbc.weightx = 1.0;
         filePanel.add(txtXmlFile, gbc);
+
+        JPanel xmlButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         JButton btnXml = new JButton("Обзор...");
         btnXml.addActionListener(this::chooseXmlFile);
+        xmlButtons.add(btnXml);
+
+        JButton btnViewXml = new JButton("Просмотр");
+        btnViewXml.addActionListener(e -> viewFile(txtXmlFile.getText(), "XML-файл"));
+        xmlButtons.add(btnViewXml);
+
         gbc.gridx = 2; gbc.weightx = 0;
-        filePanel.add(btnXml, gbc);
+        filePanel.add(xmlButtons, gbc);
 
         // Файл размерностей
         gbc.gridx = 0; gbc.gridy = 2;
@@ -98,10 +149,18 @@ public class TelemetryDialog extends JFrame {
         txtDimFile.setEditable(false);
         gbc.gridx = 1; gbc.weightx = 1.0;
         filePanel.add(txtDimFile, gbc);
+
+        JPanel dimButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         JButton btnDim = new JButton("Обзор...");
         btnDim.addActionListener(this::chooseDimFile);
+        dimButtons.add(btnDim);
+
+        JButton btnViewDim = new JButton("Просмотр");
+        btnViewDim.addActionListener(e -> viewFile(txtDimFile.getText(), "Файл размерностей"));
+        dimButtons.add(btnViewDim);
+
         gbc.gridx = 2; gbc.weightx = 0;
-        filePanel.add(btnDim, gbc);
+        filePanel.add(dimButtons, gbc);
 
         // Кнопка загрузки
         gbc.gridx = 1; gbc.gridy = 3;
@@ -109,15 +168,9 @@ public class TelemetryDialog extends JFrame {
         btnLoad.addActionListener(this::loadDataAction);
         filePanel.add(btnLoad, gbc);
 
-        // Кнопка сохранения статистики
-        JButton btnSaveStats = new JButton("Сохранить статистику");
-        btnSaveStats.addActionListener(this::saveStatistics);
-        gbc.gridx = 2; gbc.gridy = 3;
-        filePanel.add(btnSaveStats, gbc);
-
         add(filePanel, BorderLayout.NORTH);
 
-        // Список параметров и область значений
+        // ---------- Центральная часть: список параметров и значения ----------
         listModel = new DefaultListModel<>();
         paramList = new JList<>(listModel);
         paramList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -132,14 +185,257 @@ public class TelemetryDialog extends JFrame {
         splitPane.setDividerLocation(300);
         add(splitPane, BorderLayout.CENTER);
 
-        // Статистика
+        // ---------- Нижняя панель: два списка чекбоксов и кнопки ----------
+        JPanel southPanel = new JPanel(new BorderLayout());
+
+        // Панель для двух списков (горизонтально)
+        JPanel listsPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+
+        // Список общей статистики
+        JPanel generalPanel = new JPanel(new BorderLayout());
+        generalPanel.setBorder(BorderFactory.createTitledBorder("Общая статистика"));
+        statSelectedGeneral = new boolean[STAT_ITEMS_GENERAL.length];
+        DefaultListModel<String> generalModel = new DefaultListModel<>();
+        for (String item : STAT_ITEMS_GENERAL) {
+            generalModel.addElement(item);
+        }
+        statListGeneral = new JList<>(generalModel);
+        statListGeneral.setCellRenderer(new CheckBoxListRenderer(statSelectedGeneral));
+        statListGeneral.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int index = statListGeneral.locationToIndex(e.getPoint());
+                if (index != -1) {
+                    statSelectedGeneral[index] = !statSelectedGeneral[index];
+                    statListGeneral.repaint();
+                }
+            }
+        });
+        JScrollPane generalScroll = new JScrollPane(statListGeneral);
+        generalScroll.setPreferredSize(new Dimension(200, 150));
+        generalPanel.add(generalScroll, BorderLayout.CENTER);
+        listsPanel.add(generalPanel);
+
+        // Список статистики по параметру
+        JPanel paramStatPanel = new JPanel(new BorderLayout());
+        paramStatPanel.setBorder(BorderFactory.createTitledBorder("Статистика выбранного параметра"));
+        statSelectedParam = new boolean[STAT_ITEMS_PARAM.length];
+        DefaultListModel<String> paramModel = new DefaultListModel<>();
+        for (String item : STAT_ITEMS_PARAM) {
+            paramModel.addElement(item);
+        }
+        statListParam = new JList<>(paramModel);
+        statListParam.setCellRenderer(new CheckBoxListRenderer(statSelectedParam));
+        statListParam.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int index = statListParam.locationToIndex(e.getPoint());
+                if (index != -1) {
+                    statSelectedParam[index] = !statSelectedParam[index];
+                    statListParam.repaint();
+                }
+            }
+        });
+        JScrollPane paramScroll = new JScrollPane(statListParam);
+        paramScroll.setPreferredSize(new Dimension(200, 150));
+        paramStatPanel.add(paramScroll, BorderLayout.CENTER);
+        listsPanel.add(paramStatPanel);
+
+        // Панель для кнопок
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        btnShowSelected = new JButton("Показать выбранное");
+        btnShowSelected.addActionListener(this::showSelectedStatistics);
+        buttonPanel.add(btnShowSelected);
+
+        btnResetStats = new JButton("Полная статистика");
+        btnResetStats.addActionListener(e -> buildStatistics());
+        buttonPanel.add(btnResetStats);
+
+        btnSaveStats = new JButton("Сохранить статистику");
+        btnSaveStats.addActionListener(this::saveCurrentStatistics);
+        buttonPanel.add(btnSaveStats);
+
+        btnClearValues = new JButton("Очистить значения");
+        btnClearValues.addActionListener(e -> valueArea.setText(""));
+        buttonPanel.add(btnClearValues);
+
+        // Сборка нижней панели
+        JPanel controlPanel = new JPanel(new BorderLayout());
+        controlPanel.add(listsPanel, BorderLayout.CENTER);
+        controlPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        southPanel.add(controlPanel, BorderLayout.NORTH);
+
+        // Текстовая область для отображения статистики
         statsArea = new JTextArea();
         statsArea.setEditable(false);
         statsArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         statsArea.setBackground(new Color(240, 240, 240));
-        add(new JScrollPane(statsArea), BorderLayout.SOUTH);
+        southPanel.add(new JScrollPane(statsArea), BorderLayout.CENTER);
+
+        add(southPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Просмотр содержимого выбранного файла
+     * @param filePath путь к файлу
+     * @param fileType тип файла для заголовка окна
+     */
+    private void viewFile(String filePath, String fileType) {
+        if (filePath == null || filePath.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Сначала выберите файл для просмотра.",
+                    "Предупреждение",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        File file = new File(filePath);
+        if (!file.exists()) {
+            JOptionPane.showMessageDialog(this,
+                    "Файл не существует:\n" + filePath,
+                    "Ошибка",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            // Создаём окно для просмотра
+            JFrame viewFrame = new JFrame("Просмотр: " + file.getName());
+            viewFrame.setSize(800, 600);
+            viewFrame.setLocationRelativeTo(this);
+
+            JTextArea textArea = new JTextArea();
+            textArea.setEditable(false);
+            textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+            // Определяем тип файла и читаем соответствующим образом
+            if (fileType.contains("TM") || filePath.toLowerCase().endsWith(".knp")) {
+                // Для бинарных TM-файлов показываем hex-дамп
+                readBinaryFile(file, textArea);
+            } else {
+                // Для текстовых файлов (XML, ion) читаем как текст
+                readTextFile(file, textArea);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            viewFrame.add(scrollPane);
+
+            // Кнопка закрытия
+            JButton btnClose = new JButton("Закрыть");
+            btnClose.addActionListener(e -> viewFrame.dispose());
+
+            JPanel bottomPanel = new JPanel();
+            bottomPanel.add(btnClose);
+            viewFrame.add(bottomPanel, BorderLayout.SOUTH);
+
+            viewFrame.setVisible(true);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Ошибка при чтении файла:\n" + ex.getMessage(),
+                    "Ошибка",
+                    JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Чтение текстового файла
+     */
+    private void readTextFile(File file, JTextArea textArea) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            StringBuilder content = new StringBuilder();
+            String line;
+            int lineNum = 1;
+            while ((line = reader.readLine()) != null) {
+                content.append(String.format("%4d: %s\n", lineNum++, line));
+                if (content.length() > 1000000) { // Ограничение на 1 млн символов
+                    content.append("\n... файл слишком большой, показана только часть ...\n");
+                    break;
+                }
+            }
+            textArea.setText(content.toString());
+            textArea.setCaretPosition(0);
+        }
+    }
+
+    /**
+     * Чтение бинарного файла с выводом hex-дампа
+     */
+    private void readBinaryFile(File file, JTextArea textArea) throws IOException {
+        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+            StringBuilder content = new StringBuilder();
+            byte[] buffer = new byte[16];
+            long fileLength = raf.length();
+            long maxBytes = Math.min(fileLength, 10240); // максимум 10 КБ
+
+            content.append("Бинарный файл: ").append(file.getName()).append("\n");
+            content.append("Размер: ").append(fileLength).append(" байт\n");
+            content.append("Первые ").append(maxBytes).append(" байт:\n\n");
+
+            for (long offset = 0; offset < maxBytes; offset += 16) {
+                int bytesRead = raf.read(buffer);
+                if (bytesRead <= 0) break;
+
+                // Адрес
+                content.append(String.format("%08X: ", offset));
+
+                // Hex-представление
+                for (int i = 0; i < 16; i++) {
+                    if (i < bytesRead) {
+                        content.append(String.format("%02X ", buffer[i]));
+                    } else {
+                        content.append("   ");
+                    }
+                    if (i == 7) content.append(" ");
+                }
+
+                content.append(" |");
+
+                // ASCII-представление
+                for (int i = 0; i < bytesRead; i++) {
+                    char c = (char) buffer[i];
+                    if (c >= 32 && c <= 126) {
+                        content.append(c);
+                    } else {
+                        content.append('.');
+                    }
+                }
+
+                content.append("|\n");
+            }
+
+            if (fileLength > maxBytes) {
+                content.append("\n... и ещё ").append(fileLength - maxBytes).append(" байт ...\n");
+            }
+
+            textArea.setText(content.toString());
+            textArea.setCaretPosition(0);
+        }
+    }
+
+    // Рендерер для чекбоксов
+    private static class CheckBoxListRenderer extends JCheckBox implements ListCellRenderer<String> {
+        private final boolean[] selected;
+
+        public CheckBoxListRenderer(boolean[] selected) {
+            this.selected = selected;
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList<? extends String> list, String value,
+                                                      int index, boolean isSelected, boolean cellHasFocus) {
+            setText(value);
+            setSelected(selected[index]);
+            setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+            setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+            return this;
+        }
+    }
+
+    // Методы выбора файлов
     private void chooseTmFile(ActionEvent e) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Выберите TM-файл (.KNP)");
@@ -164,6 +460,7 @@ public class TelemetryDialog extends JFrame {
         }
     }
 
+    // Загрузка данных
     private void loadDataAction(ActionEvent e) {
         String tmPath = txtTmFile.getText().trim();
         String xmlPath = txtXmlFile.getText().trim();
@@ -195,7 +492,7 @@ public class TelemetryDialog extends JFrame {
             @Override
             protected void done() {
                 try {
-                    get(); // проверить исключения
+                    get();
                     updateUIAfterLoad();
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -211,6 +508,7 @@ public class TelemetryDialog extends JFrame {
         worker.execute();
     }
 
+    // Обновление интерфейса после загрузки
     private void updateUIAfterLoad() {
         listModel.clear();
         for (String name : reader.getRecordsByName().keySet()) {
@@ -218,8 +516,18 @@ public class TelemetryDialog extends JFrame {
         }
         buildStatistics();
         valueArea.setText("");
+        // Сбросить состояния чекбоксов
+        for (int i = 0; i < statSelectedGeneral.length; i++) {
+            statSelectedGeneral[i] = false;
+        }
+        for (int i = 0; i < statSelectedParam.length; i++) {
+            statSelectedParam[i] = false;
+        }
+        statListGeneral.repaint();
+        statListParam.repaint();
     }
 
+    // Обработчик выбора параметра (добавление значений с разделителем)
     private void paramSelected(ListSelectionEvent e) {
         if (e.getValueIsAdjusting() || reader == null) return;
         String selected = paramList.getSelectedValue();
@@ -240,10 +548,17 @@ public class TelemetryDialog extends JFrame {
                     .append(rec.getValueAsString())
                     .append("\n");
         }
-        valueArea.setText(sb.toString());
+
+        String currentText = valueArea.getText();
+        if (!currentText.isEmpty()) {
+            valueArea.setText(currentText + "\n----------------------\n\n" + sb.toString());
+        } else {
+            valueArea.setText(sb.toString());
+        }
         valueArea.setCaretPosition(0);
     }
 
+    // Полная статистика (общая)
     private void buildStatistics() {
         if (reader == null) {
             statsArea.setText("Нет загруженных данных.");
@@ -264,6 +579,10 @@ public class TelemetryDialog extends JFrame {
         sb.append("    Point (3): ").append(typeCounts[3]).append("\n");
 
         sb.append("  Уникальных параметров: ").append(reader.getRecordsByName().size()).append("\n");
+        sb.append("  Point < 4 байт: ").append(reader.getPointLess4()).append("\n");
+        sb.append("  Point > 4 байт: ").append(reader.getPointGreater4()).append("\n");
+        sb.append("  Code < 8 разрядов: ").append(reader.getCodeLess8()).append("\n");
+        sb.append("  Code > 8 разрядов: ").append(reader.getCodeGreater8()).append("\n");
         statsArea.setText(sb.toString());
     }
 
@@ -271,65 +590,184 @@ public class TelemetryDialog extends JFrame {
         statsArea.setText("Загрузите данные для отображения статистики.");
     }
 
-    // ========== Сохранение статистики с выбором ==========
-
-    private void saveStatistics(ActionEvent e) {
+    // Отображение выбранной статистики из обоих списков
+    private void showSelectedStatistics(ActionEvent e) {
         if (reader == null) {
-            JOptionPane.showMessageDialog(this,
-                    "Нет загруженных данных. Сначала выполните загрузку.",
-                    "Предупреждение", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Нет загруженных данных.");
             return;
         }
 
-        String[] options = {"Вся статистика", "Статистика выбранного параметра", "Отдельный пункт"};
-        int choice = JOptionPane.showOptionDialog(this,
-                "Выберите, что сохранить:",
-                "Сохранение статистики",
-                JOptionPane.DEFAULT_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                options,
-                options[0]);
+        StringBuilder sb = new StringBuilder();
+        sb.append("Выборочная статистика\n");
+        sb.append("=====================\n\n");
 
-        String content = null;
-        String defaultFileName = "statistics.txt";
+        boolean anySelected = false;
 
-        switch (choice) {
-            case 0: // Вся статистика
-                content = statsArea.getText();
-                defaultFileName = "full_statistics.txt";
-                break;
-            case 1: // Статистика выбранного параметра
-                String selectedParam = paramList.getSelectedValue();
-                if (selectedParam == null) {
-                    JOptionPane.showMessageDialog(this,
-                            "Не выбран параметр. Выберите параметр из списка.",
-                            "Ошибка", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                content = getParameterStatistics(selectedParam);
-                defaultFileName = "param_" + selectedParam.replace('/', '_') + ".txt";
-                break;
-            case 2: // Отдельный пункт
-                String item = (String) JOptionPane.showInputDialog(this,
-                        "Выберите пункт статистики:",
-                        "Отдельный пункт",
-                        JOptionPane.PLAIN_MESSAGE,
-                        null,
-                        STAT_ITEMS,
-                        STAT_ITEMS[0]);
-                if (item == null) return; // отмена
-                content = getSingleStatisticItem(item);
-                defaultFileName = "stat_item.txt";
-                break;
-            default:
-                return; // отмена
+        // --- Общая статистика ---
+        int[] tc = reader.getTypeCounts();
+        if (statSelectedGeneral[0]) {
+            sb.append(STAT_ITEMS_GENERAL[0]).append(": ").append(reader.getTotalRecords()).append("\n");
+            anySelected = true;
+        }
+        if (statSelectedGeneral[1]) {
+            sb.append(STAT_ITEMS_GENERAL[1]).append(": ").append(reader.getServiceRecords()).append("\n");
+            anySelected = true;
+        }
+        if (statSelectedGeneral[2]) {
+            sb.append(STAT_ITEMS_GENERAL[2]).append(": ").append(reader.getUsefulRecords()).append("\n");
+            anySelected = true;
+        }
+        if (statSelectedGeneral[3]) {
+            sb.append(STAT_ITEMS_GENERAL[3]).append(": ").append(reader.getUnknownRecords()).append("\n");
+            anySelected = true;
+        }
+        if (statSelectedGeneral[4]) {
+            sb.append(STAT_ITEMS_GENERAL[4]).append(": ").append(tc[0]).append("\n");
+            anySelected = true;
+        }
+        if (statSelectedGeneral[5]) {
+            sb.append(STAT_ITEMS_GENERAL[5]).append(": ").append(tc[1]).append("\n");
+            anySelected = true;
+        }
+        if (statSelectedGeneral[6]) {
+            sb.append(STAT_ITEMS_GENERAL[6]).append(": ").append(tc[2]).append("\n");
+            anySelected = true;
+        }
+        if (statSelectedGeneral[7]) {
+            sb.append(STAT_ITEMS_GENERAL[7]).append(": ").append(tc[3]).append("\n");
+            anySelected = true;
+        }
+        if (statSelectedGeneral[8]) {
+            sb.append(STAT_ITEMS_GENERAL[8]).append(": ").append(reader.getRecordsByName().size()).append("\n");
+            anySelected = true;
+        }
+        if (statSelectedGeneral[9]) {
+            sb.append(STAT_ITEMS_GENERAL[9]).append(": ").append(reader.getPointLess4()).append("\n");
+            anySelected = true;
+        }
+        if (statSelectedGeneral[10]) {
+            sb.append(STAT_ITEMS_GENERAL[10]).append(": ").append(reader.getPointGreater4()).append("\n");
+            anySelected = true;
+        }
+        if (statSelectedGeneral[11]) {
+            sb.append(STAT_ITEMS_GENERAL[11]).append(": ").append(reader.getCodeLess8()).append("\n");
+            anySelected = true;
+        }
+        if (statSelectedGeneral[12]) {
+            sb.append(STAT_ITEMS_GENERAL[12]).append(": ").append(reader.getCodeGreater8()).append("\n");
+            anySelected = true;
         }
 
-        // Сохраняем в файл
+        // --- Статистика по выбранному параметру ---
+        String selectedParam = paramList.getSelectedValue();
+        if (selectedParam != null) {
+            List<TmDat> paramRecords = reader.getRecordsByName().get(selectedParam);
+            if (paramRecords != null) {
+                // Подсчёт по типам для параметра
+                int paramTotal = paramRecords.size();
+                int paramLong = 0, paramDouble = 0, paramCode = 0, paramPoint = 0, paramUnknown = 0;
+                int paramPointLess4 = 0, paramPointGreater4 = 0;
+                int paramCodeLess8 = 0, paramCodeGreater8 = 0;
+
+                for (TmDat rec : paramRecords) {
+                    if (rec instanceof TmUnknown) {
+                        paramUnknown++;
+                    } else {
+                        switch (rec.getValueType()) {
+                            case 0: paramLong++; break;
+                            case 1: paramDouble++; break;
+                            case 2: {
+                                paramCode++;
+                                TmCode c = (TmCode) rec;
+                                if (c.getCodeLength() < 8) paramCodeLess8++;
+                                else if (c.getCodeLength() > 8) paramCodeGreater8++;
+                                break;
+                            }
+                            case 3: {
+                                paramPoint++;
+                                TmPoint p = (TmPoint) rec;
+                                if (p.getDataLength() < 4) paramPointLess4++;
+                                else if (p.getDataLength() > 4) paramPointGreater4++;
+                                break;
+                            }
+                            default: paramUnknown++;
+                        }
+                    }
+                }
+
+                // Вывод отмеченных пунктов для параметра
+                if (statSelectedParam[0]) {
+                    sb.append("\n").append(STAT_ITEMS_PARAM[0]).append(" (").append(selectedParam).append("): ").append(paramTotal).append("\n");
+                    anySelected = true;
+                }
+                if (statSelectedParam[1]) {
+                    sb.append(STAT_ITEMS_PARAM[1]).append(" (").append(selectedParam).append("): ").append(paramLong).append("\n");
+                    anySelected = true;
+                }
+                if (statSelectedParam[2]) {
+                    sb.append(STAT_ITEMS_PARAM[2]).append(" (").append(selectedParam).append("): ").append(paramDouble).append("\n");
+                    anySelected = true;
+                }
+                if (statSelectedParam[3]) {
+                    sb.append(STAT_ITEMS_PARAM[3]).append(" (").append(selectedParam).append("): ").append(paramCode).append("\n");
+                    anySelected = true;
+                }
+                if (statSelectedParam[4]) {
+                    sb.append(STAT_ITEMS_PARAM[4]).append(" (").append(selectedParam).append("): ").append(paramPoint).append("\n");
+                    anySelected = true;
+                }
+                if (statSelectedParam[5]) {
+                    sb.append(STAT_ITEMS_PARAM[5]).append(" (").append(selectedParam).append("): ").append(paramUnknown).append("\n");
+                    anySelected = true;
+                }
+                if (statSelectedParam[6]) {
+                    sb.append(STAT_ITEMS_PARAM[6]).append(" (").append(selectedParam).append("): ").append(paramPointLess4).append("\n");
+                    anySelected = true;
+                }
+                if (statSelectedParam[7]) {
+                    sb.append(STAT_ITEMS_PARAM[7]).append(" (").append(selectedParam).append("): ").append(paramPointGreater4).append("\n");
+                    anySelected = true;
+                }
+                if (statSelectedParam[8]) {
+                    sb.append(STAT_ITEMS_PARAM[8]).append(" (").append(selectedParam).append("): ").append(paramCodeLess8).append("\n");
+                    anySelected = true;
+                }
+                if (statSelectedParam[9]) {
+                    sb.append(STAT_ITEMS_PARAM[9]).append(" (").append(selectedParam).append("): ").append(paramCodeGreater8).append("\n");
+                    anySelected = true;
+                }
+            }
+        } else {
+            // Если параметр не выбран, но отмечены пункты из второго списка, предупреждение
+            for (boolean b : statSelectedParam) {
+                if (b) {
+                    sb.append("\nВнимание: для статистики параметра необходимо выбрать параметр.\n");
+                    break;
+                }
+            }
+        }
+
+        if (!anySelected) {
+            statsArea.setText("Ничего не выбрано.");
+        } else {
+            statsArea.setText(sb.toString());
+        }
+    }
+
+    // Сохранение текущего содержимого statsArea в файл
+    private void saveCurrentStatistics(ActionEvent e) {
+        if (reader == null) {
+            JOptionPane.showMessageDialog(this, "Нет загруженных данных.");
+            return;
+        }
+        String content = statsArea.getText();
+        if (content == null || content.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Нет статистики для сохранения.");
+            return;
+        }
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Сохранить статистику");
-        chooser.setSelectedFile(new File(defaultFileName));
+        chooser.setSelectedFile(new File("statistics.txt"));
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = chooser.getSelectedFile();
             try (FileWriter fw = new FileWriter(file)) {
@@ -343,55 +781,6 @@ public class TelemetryDialog extends JFrame {
                         "Ошибка при сохранении: " + ex.getMessage(),
                         "Ошибка", JOptionPane.ERROR_MESSAGE);
             }
-        }
-    }
-
-    /** Формирует статистику по одному параметру (имя и количество записей). */
-    private String getParameterStatistics(String paramName) {
-        List<TmDat> records = reader.getRecordsByName().get(paramName);
-        if (records == null) return "Параметр не найден: " + paramName;
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("Статистика по параметру: ").append(paramName).append("\n");
-        sb.append("Количество записей: ").append(records.size()).append("\n");
-        // Можно добавить дополнительную информацию, например, временной диапазон
-        if (!records.isEmpty()) {
-            long minTime = records.stream().mapToLong(TmDat::getTime).min().getAsLong();
-            long maxTime = records.stream().mapToLong(TmDat::getTime).max().getAsLong();
-            sb.append("Диапазон времени: ")
-                    .append(TmDat.formatTime(minTime))
-                    .append(" - ")
-                    .append(TmDat.formatTime(maxTime))
-                    .append("\n");
-        }
-        return sb.toString();
-    }
-
-    /** Возвращает строку с одним выбранным пунктом общей статистики. */
-    private String getSingleStatisticItem(String item) {
-        if (reader == null) return "Нет данных";
-        int[] tc = reader.getTypeCounts();
-        switch (item) {
-            case "Общее количество записисей":
-                return "Общее количество записей: " + reader.getTotalRecords();
-            case "Служебные записи":
-                return "Служебные записи: " + reader.getServiceRecords();
-            case "Полезные записи":
-                return "Полезные записи: " + reader.getUsefulRecords();
-            case "Неизвестный тип":
-                return "Записей с неизвестным типом: " + reader.getUnknownRecords();
-            case "Long (0)":
-                return "Long (0): " + tc[0];
-            case "Double (1)":
-                return "Double (1): " + tc[1];
-            case "Code (2)":
-                return "Code (2): " + tc[2];
-            case "Point (3)":
-                return "Point (3): " + tc[3];
-            case "Уникальные параметры":
-                return "Уникальных параметров: " + reader.getRecordsByName().size();
-            default:
-                return "Неизвестный пункт";
         }
     }
 }
