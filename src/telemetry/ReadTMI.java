@@ -344,7 +344,7 @@ public class ReadTMI {
         // Статистика для Point
         if (this.dataLength < 4) {
             pointLess4++;
-        } else if (this.dataLength >= 4) {
+        } else if (this.dataLength > 4) {
             pointGreater4++;
         }
 
@@ -437,7 +437,7 @@ public class ReadTMI {
         // Статистика для Code
         if (codeLength < 8) {
             codeLess8++;
-        } else if (codeLength >= 8) {
+        } else if (codeLength > 8) {
             codeGreater8++;
         }
     }

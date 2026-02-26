@@ -1,0 +1,334 @@
+@startuml
+
+/' diagram meta data start
+config=StructureConfiguration;
+{
+  "projectClassification": {
+    "searchMode": "OpenProject", // OpenProject, AllProjects
+    "includedProjects": "",
+    "pathEndKeywords": "*.impl",
+    "isClientPath": "",
+    "isClientName": "",
+    "isTestPath": "",
+    "isTestName": "",
+    "isMappingPath": "",
+    "isMappingName": "",
+    "isDataAccessPath": "",
+    "isDataAccessName": "",
+    "isDataStructurePath": "",
+    "isDataStructureName": "",
+    "isInterfaceStructuresPath": "",
+    "isInterfaceStructuresName": "",
+    "isEntryPointPath": "",
+    "isEntryPointName": "",
+    "treatFinalFieldsAsMandatory": false
+  },
+  "graphRestriction": {
+    "classPackageExcludeFilter": "",
+    "classPackageIncludeFilter": "",
+    "classNameExcludeFilter": "",
+    "classNameIncludeFilter": "",
+    "methodNameExcludeFilter": "",
+    "methodNameIncludeFilter": "",
+    "removeByInheritance": "", // inheritance/annotation based filtering is done in a second step
+    "removeByAnnotation": "",
+    "removeByClassPackage": "", // cleanup the graph after inheritance/annotation based filtering is done
+    "removeByClassName": "",
+    "cutMappings": false,
+    "cutEnum": true,
+    "cutTests": true,
+    "cutClient": true,
+    "cutDataAccess": false,
+    "cutInterfaceStructures": false,
+    "cutDataStructures": false,
+    "cutGetterAndSetter": true,
+    "cutConstructors": true
+  },
+  "graphTraversal": {
+    "forwardDepth": 6,
+    "backwardDepth": 6,
+    "classPackageExcludeFilter": "",
+    "classPackageIncludeFilter": "",
+    "classNameExcludeFilter": "",
+    "classNameIncludeFilter": "",
+    "methodNameExcludeFilter": "",
+    "methodNameIncludeFilter": "",
+    "hideMappings": false,
+    "hideDataStructures": false,
+    "hidePrivateMethods": true,
+    "hideInterfaceCalls": true, // indirection: implementation -> interface (is hidden) -> implementation
+    "onlyShowApplicationEntryPoints": false, // root node is included
+    "useMethodCallsForStructureDiagram": "ForwardOnly" // ForwardOnly, BothDirections, No
+  },
+  "details": {
+    "aggregation": "None", // ByClass, GroupByClass, None
+    "showClassGenericTypes": true,
+    "showMethods": true,
+    "showMethodParameterNames": true,
+    "showMethodParameterTypes": true,
+    "showMethodReturnType": true,
+    "showPackageLevels": 8,
+    "showDetailedClassStructure": true
+  },
+  "rootClass": "telemetry.ReadTMI",
+  "extensionCallbackMethod": "" // qualified.class.name#methodName - signature: public static String method(String)
+}
+diagram meta data end '/
+
+
+
+digraph g {
+    rankdir="TB"
+    splines=polyline
+    
+
+'nodes 
+DatXML780346297[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)DatXML</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >-   paramFullNames: Map&lt;Integer, String&gt; [0..*]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   paramNames: Map&lt;Integer, String&gt; [0..*]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   paramTextValues: Map&lt;Integer, List&lt;String&gt;&gt; [0..*]</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >+ getFullName(number: int): String</TD></TR>
+<TR><TD ALIGN="LEFT" >+ getName(number: int): String</TD></TR>
+<TR><TD ALIGN="LEFT" >+ getTextValues(number: int): List&lt;String&gt;</TD></TR>
+<TR><TD ALIGN="LEFT" >+ load(filename: String)</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+Dim780346297[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)Dim</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >-   dimensions: Map&lt;Integer, String&gt; [0..*]</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >+ getDimension(code: int): String</TD></TR>
+<TR><TD ALIGN="LEFT" >+ load(filename: String)</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+ReadTMI780346297[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)ReadTMI</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >-   allRecords: List&lt;TmDat&gt; [0..*]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   attribute: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   bytesNum: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   codeGreater8: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   codeLength: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   codeLess8: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   currentByte: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   currentByteHex: String [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   datXML: DatXML [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   dataLength: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   dim: Dim [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   dimensionCode: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   inputStream: InputStream [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   isPointReading: boolean [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   messageType: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   milliseconds: long [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   paramNumber: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   pointData: byte[] [0..*]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   pointDataIndex: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   pointGreater4: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   pointLess4: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   position: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   readingPointData: boolean [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   recordsByName: Map&lt;String, List&lt;TmDat&gt;&gt; [0..*]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   remainingPointBytes: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   serviceRecords: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   tmpString: String [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   totalRecords: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   typeCounts: int[] [0..*]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   unknownRecords: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   usefulRecords: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   valueType: int [1]</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >- addRecord(record: TmDat)</TD></TR>
+<TR><TD ALIGN="LEFT" >- createCodeRecord()</TD></TR>
+<TR><TD ALIGN="LEFT" >- createDoubleRecord()</TD></TR>
+<TR><TD ALIGN="LEFT" >- createLongRecord()</TD></TR>
+<TR><TD ALIGN="LEFT" >- createPointRecord()</TD></TR>
+<TR><TD ALIGN="LEFT" >- createUnknownRecord()</TD></TR>
+<TR><TD ALIGN="LEFT" >- finishPointRecord()</TD></TR>
+<TR><TD ALIGN="LEFT" >- getAttributeAndValueType()</TD></TR>
+<TR><TD ALIGN="LEFT" >- getDimensionAndMessageType()</TD></TR>
+<TR><TD ALIGN="LEFT" >- getMilliseconds()</TD></TR>
+<TR><TD ALIGN="LEFT" >- getParamNumber()</TD></TR>
+<TR><TD ALIGN="LEFT" >- getValue()</TD></TR>
+<TR><TD ALIGN="LEFT" >+ load(filename: String, dim: Dim, datXML: DatXML)</TD></TR>
+<TR><TD ALIGN="LEFT" >- processCode()</TD></TR>
+<TR><TD ALIGN="LEFT" >- processDouble()</TD></TR>
+<TR><TD ALIGN="LEFT" >- processLong()</TD></TR>
+<TR><TD ALIGN="LEFT" >- processPoint()</TD></TR>
+<TR><TD ALIGN="LEFT" >- processPointDataByte()</TD></TR>
+<TR><TD ALIGN="LEFT" >- processServiceMessage()</TD></TR>
+<TR><TD ALIGN="LEFT" >- processUnknown()</TD></TR>
+<TR><TD ALIGN="LEFT" >- processUsefulRecord()</TD></TR>
+<TR><TD ALIGN="LEFT" >- readByte(): int</TD></TR>
+<TR><TD ALIGN="LEFT" >- resetForNextRecord()</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+TelemetryDialog780346297[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)TelemetryDialog</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >-   btnClearValues: JButton [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   btnLoad: JButton [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   btnResetStats: JButton [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   btnSaveStats: JButton [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   btnShowSelected: JButton [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   btnViewFile: JButton [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   datXML: DatXML [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   dim: Dim [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   listModel: DefaultListModel&lt;String&gt; [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   paramList: JList&lt;String&gt; [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   reader: ReadTMI [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   statListGeneral: JList&lt;String&gt; [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   statListParam: JList&lt;String&gt; [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   statSelectedGeneral: boolean[] [0..*]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   statSelectedParam: boolean[] [0..*]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   statsArea: JTextArea [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   txtDimFile: JTextField [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   txtTmFile: JTextField [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   txtXmlFile: JTextField [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   valueArea: JTextArea [0..1]</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >- buildStatistics()</TD></TR>
+<TR><TD ALIGN="LEFT" >- chooseDimFile(e: ActionEvent)</TD></TR>
+<TR><TD ALIGN="LEFT" >- chooseTmFile(e: ActionEvent)</TD></TR>
+<TR><TD ALIGN="LEFT" >- chooseXmlFile(e: ActionEvent)</TD></TR>
+<TR><TD ALIGN="LEFT" >- initUI()</TD></TR>
+<TR><TD ALIGN="LEFT" >- loadDataAction(e: ActionEvent)</TD></TR>
+<TR><TD ALIGN="LEFT" >- paramSelected(e: ListSelectionEvent)</TD></TR>
+<TR><TD ALIGN="LEFT" >- readBinaryFile(file: File, textArea: JTextArea)</TD></TR>
+<TR><TD ALIGN="LEFT" >- readTextFile(file: File, textArea: JTextArea)</TD></TR>
+<TR><TD ALIGN="LEFT" >- saveCurrentStatistics(e: ActionEvent)</TD></TR>
+<TR><TD ALIGN="LEFT" >- showSelectedStatistics(e: ActionEvent)</TD></TR>
+<TR><TD ALIGN="LEFT" >- updateStatsPlaceholder()</TD></TR>
+<TR><TD ALIGN="LEFT" >- updateUIAfterLoad()</TD></TR>
+<TR><TD ALIGN="LEFT" >- viewFile(filePath: String, fileType: String)</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+TmCode780346297[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)TmCode</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >-   codeLength: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   codeValue: int [1]</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+TmDat780346297[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)TmDat</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >#   attribute: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >#   dimension: String [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >#   name: String [0..1]</TD></TR>
+<TR><TD ALIGN="LEFT" >#   number: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >#   time: long [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >#   valueType: int [1]</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >+ compareTo(other: TmDat): int</TD></TR>
+<TR><TD ALIGN="LEFT" >+ formatTime(millis: long): String</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+TmDouble780346297[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)TmDouble</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >-   value: double [1]</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+TmLong780346297[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)TmLong</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >-   value: int [1]</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+TmPoint780346297[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)TmPoint</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >-   data: byte[] [0..*]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   dataLength: int [1]</TD></TR>
+<TR><TD ALIGN="LEFT" >-   elementSize: int [1]</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+TmUnknown780346297[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)TmUnknown</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >-   rawData: byte[] [0..*]</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+'edges    
+ReadTMI780346297 -> DatXML780346297[label="datXML
+[0..1]"];
+ReadTMI780346297 -> Dim780346297[label="dim
+[0..1]"];
+ReadTMI780346297 -> TmDat780346297[label="allRecords
+[0..*]"];
+ReadTMI780346297 -> TmDat780346297[label="recordsByName
+[0..*]"];
+TelemetryDialog780346297 -> ReadTMI780346297[label="reader
+[0..1]"];
+TmDat780346297 -> TmCode780346297[arrowhead=none, arrowtail=empty, dir=both];
+TmDat780346297 -> TmDouble780346297[arrowhead=none, arrowtail=empty, dir=both];
+TmDat780346297 -> TmLong780346297[arrowhead=none, arrowtail=empty, dir=both];
+TmDat780346297 -> TmPoint780346297[arrowhead=none, arrowtail=empty, dir=both];
+TmDat780346297 -> TmUnknown780346297[arrowhead=none, arrowtail=empty, dir=both];
+    
+}
+@enduml
